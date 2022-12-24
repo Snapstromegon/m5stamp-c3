@@ -1,25 +1,22 @@
-use esp_idf_hal::gpio::{AnyInputPin, Input, InterruptType, Level, PinDriver};
+use esp_idf_hal::gpio::{AnyIOPin, Input, InterruptType, Level, PinDriver, Pull};
 
 pub struct Button<'d> {
-    pin_driver: PinDriver<'d, AnyInputPin, Input>,
+    pin_driver: PinDriver<'d, AnyIOPin, Input>,
 }
 
 impl<'d> Button<'d> {
-    pub fn new(
-        pin: AnyInputPin,
-        callback: impl FnMut(Level) + Send + 'static,
-        interrupt_type: InterruptType,
-    ) -> anyhow::Result<Self> {
+    pub fn new(pin: AnyIOPin) -> anyhow::Result<Self> {
         let mut pd = PinDriver::input(pin)?;
-        unsafe {
-            pd.subscribe(|| callback(pd.get_level()))?;
-        }
-        pd.set_interrupt_type(interrupt_type)?;
+        pd.set_pull(Pull::Up)?;
         Ok(Self { pin_driver: pd })
     }
 
     pub fn set_interrupt_type(&mut self, interrupt_type: InterruptType) -> anyhow::Result<()> {
         self.pin_driver.set_interrupt_type(interrupt_type)?;
         Ok(())
+    }
+
+    pub fn is_pressed(&self) -> bool {
+        self.pin_driver.get_level() == Level::Low
     }
 }

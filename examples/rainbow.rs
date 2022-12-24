@@ -24,8 +24,13 @@ fn main() -> anyhow::Result<()> {
     })?;
     timer.every(Duration::from_secs(1))?;
 
+    let mut i = 0;
+
     loop {
-        println!("Main Loop");
+        i = (i+1) % (256*6);
+        match i {
+            0..=(256 * 1) => 
+        }
         thread::sleep(Duration::from_secs(10));
     }
 }
